@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+
+</head>
+<body>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+
+    function connectMq(){
+        console.log('为什么不打东西呢')
+        // 连接选项
+        const options = {
+            timeout: 4000,
+            username: 'Zhxuan',
+            password: '007060'
+        }
+
+        //a.使用ws协议必须使用emq的8083端口，必须在请求地址端口后面添加"/mqtt"
+        const client = mqtt.connect('ws://rtc.slighthub.com:9003/mqtt', options)
+        //const client = mqtt.connect('ws://www.wuxiaolong.com/mqtt', options)
+
+
+        //b.使用wss协议必须使用emq的8084端口，必须在请求地址端口后面添加"/mqtt"；
+        //第一次链接时，浏览器（这里测试的是chrom浏览器，根据浏览器的厂商或者浏览器的不同版本会有差异）提示failed: Error in connection establishment: net::ERR_CERT_AUTHORITY_INVALID，
+        //因为证书是自签的，浏览器不认，解决办法：在浏览器上请求https://192.168.1.200:8084/mqtt((如果是经过ngnix转发的使用https://www.wuxiaolong.com/mqtt)),会提示不安全，选择高级，继续访问，就解决了这个问题。操作完成后再刷新该testMqtt.html页面就链接成功了。
+        //const client = mqtt.connect('wss://192.168.1.200:8084/mqtt', options)
+        //const client = mqtt.connect('wss://rtc.slighthub.com:9004/mqtt', options)
+        //client = mqtt.connect('wss://mqtt-ws.ghorses.cn/mqtt', options)
+
+
+        client.on('reconnect', (error) => {
+            console.log('正在重连:', error)
+        })
+
+        client.on('error', (error) => {
+            console.log('连接失败:', error)
+        })
+
+        client.on('connect', (e) => {
+            console.log('成功连接服务器111')
+            //订阅一个主题
+            client.subscribe('wuxiaolong/test/topic', { qos: 0 }, function (err) {
+                if (!err) {
+                    client.publish('wuxiaolong/test/topic', 'wwwwwwwwwwwwwwwwwwww')
+                    console.log("订阅成功")
+                }
+
+            })
+        })
+        //监听mq的返回
+        client.on('message', function (topic, message, packet) {
+            // message is Buffer
+            console.log("packet", packet.payload.toString())
+            client.end()
+        })
+
+    }
+
+</script>
+
+<button onclick="connectMq()">按钮</button>
+</body>
+</html>

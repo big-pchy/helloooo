@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<!-- <script src="./mqtt.js"></script> -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.2/mqttws31.js"></script>
+<script>
+    // var client = mqtt.connect('tcp://119.45.248.166:1880', {
+    //     wsOptions: {},
+    //     username: "Zhxuan",
+    //     password: "007060"
+    // })
+    // console.log(`client:${JSON.stringify(client)}`)
+    // client.on('error', function (err) {
+    //     console.error(`err:${err}`)
+    // })
+    // client.on('connect', function (err) {
+    //     console.log(`connect:${err}`)
+    // })
+    // client.on('disconnect', function (err) {
+    //     console.log(`disconnect:${err}`)
+    // })
+    // client.on('end', function (err) {
+    //     console.log(`end:${err}`)
+    // })
+    // client.on('reconnect', function (msg) {
+    //     console.log(`reconnect:${msg}`)
+    // })
+    // // console.log(client)
+    // client.on('connect', function () {
+    //     client.subscribe('presence', function (err) {
+    //         if (err) {
+    //             client.publish('presence', 'Hello mqtt')
+    //             console.error(err);
+    //         } else {
+    //             console.log("连接成功");
+    //         }
+    //     })
+    // })
+
+    // client.on('message', function (topic, message) {
+    //     // message is Buffer
+    //     console.log(message.toString())
+    //     console.log(topic.toString())
+    //     client.end()
+    // })
+    var mqtt;
+    //var host = '119.45.248.166';
+    //var host = '116.62.152.5';
+    //var host = '220.168.19.128';
+    var host = 'rtc.slighthub.com';
+    var port = 9003;
+
+    // onConnect 事件
+    function onConnect() {
+        console.log('connected.');
+        var raw_message = 'Hello World!';
+        message = new Paho.MQTT.Message(raw_message);
+        message.destinationName = '/p/client/upload';
+        console.log('sending message: ' + raw_message);
+        mqtt.send(message);
+
+        // 订阅 download topic
+        var subOptions = {
+            qos: 1,
+            onSuccess: onSubscribe
+        };
+        mqtt.subscribe('state_zhongsheng', subOptions);
+    }
+
+    // 订阅主题成功事件
+    function onSubscribe(context) {
+        console.log('subscribe success');
+        console.log(context);
+        console.log(`context:${JSON.stringify(context)}`);
+    }
+
+    // 连接失败事件
+    function onFailure(message) {
+        console.log('connect failed.');
+    }
+
+    // onMessageArrived 事件
+    function onMessageArrived(message) {
+        console.log('new message arrived...');
+        console.log(message.payloadString);
+    }
+
+
+    // 建立 MQTT websocket 连接
+    function MQTTconnect() {
+        console.log('connecting to ' + host + ':' + port);
+        mqtt = new Paho.MQTT.Client(host, port, 'clientid');
+        var options = {
+            timeout: 3,
+            onSuccess: onConnect,
+            onFailure: onFailure,
+            userName: 'Zhxuan',
+            password: '007060',
+            mqttVersion: 4
+        };
+        mqtt.onMessageArrived = onMessageArrived;
+        mqtt.connect(options);
+    }
+    MQTTconnect();
+</script>
+
+</html>
